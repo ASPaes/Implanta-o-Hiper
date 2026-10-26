@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Hiper · Implantação #{{ deployment.id }}{% endblock %}
+{% block content %}
+<div id="hiper-panel" data-deployment="{{ deployment.id }}" data-csrf="{{ csrf_token }}">
+  <div class="page-head"><div><p class="eyebrow">Contrato {{ deployment.contract_id }}</p><h1>Conectar e implantar</h1></div><span class="mode" id="deployment-status">{{ deployment.status }}</span></div>
+  <section class="summary">
+    <div><small>Empresa do contrato</small><strong>{{ deployment.data.get('company', {}).get('legal_name', '—') }}</strong></div>
+    <div><small>CNPJ do contrato</small><strong>{{ deployment.data.get('company', {}).get('cnpj', '—') }}</strong></div>
+    <div><small>Ambiente</small><strong>{{ deployment.environment }}</strong></div>
+  </section>
+  <section class="card confirm-form"><h2>Sessão e filial Hiper</h2>
+    <label for="hiper-domain">Domínio ou URL Hiper<input id="hiper-domain" value="{{ deployment.hiper_base_url or deployment.data.get('hiper_base_url') or deployment.data.get('hiper_domain') or '' }}" placeholder="seucliente.hiper.com.br" autocomplete="off"></label>
+    <div class="hiper-actions"><button type="button" id="session-open">Abrir Hiper para autenticar</button><button type="button" id="session-status">Verificar sessão</button><button type="button" id="resolve-store">Localizar filial</button></div>
+    <p id="session-message" role="status" aria-live="polite">Faça login manual no navegador; depois verifique a sessão.</p>
+    <label id="store-choice-label" hidden>Escolha a filial<select id="store-choice"><option value="">Selecione uma filial</option></select></label>
+    <dl id="store-summary" class="hiper-store"><dt>Filial</dt><dd id="store-name">{{ deployment.hiper_store_name or 'Não localizada' }}</dd><dt>CNPJ encontrado</dt><dd id="store-cnpj">{{ deployment.hiper_store_cnpj or '—' }}</dd><dt>ID da filial</dt><dd id="store-id">{{ deployment.hiper_store_id or '—' }}</dd><dt>Domínio validado</dt><dd id="store-domain">{{ deployment.hiper_base_url or '—' }}</dd></dl>
+  </section>
+  <form id="hiper-run-form" class="card confirm-form"><h2>Execução</h2>
+    <label for="hiper-mode">Modo<select id="hiper-mode"><option value="simulation">Simulação · sem navegador</option><option value="dry_run">Dry-run · ler e comparar no Hiper</option><option value="real" {% if not real_enabled %}disabled{% endif %}>Real · salvar no Hiper</option></select></label>
+    <p class="field-note">O modo real exige habilitação no servidor, contrato de API, filial validada e confirmação abaixo. Dados gerais altera somente campos não fiscais mapeados. Outras etapas reais serão bloqueadas enquanto faltar mapeamento.</p>
+    <label for="hiper-operator">Operador responsável<input id="hiper-operator" value="{{ deployment.approved_by or '' }}" autocomplete="name"></label>
+    <fieldset class="users-confirm"><legend>Etapas a executar</legend>{% for key in step_keys %}<label class="check"><input type="checkbox" name="step" value="{{ key }}" {% if key == 'loja_config' %}checked{% endif %}>{{ 'Dados gerais da loja' if key == 'loja_config' else key|replace('_', ' ')|capitalize }}</label>{% endfor %}</fieldset>
+    <label class="check"><input type="checkbox" id="accountant-approved">Dados fiscais aprovados pela contabilidade.</label>
+    <label class="check"><input type="checkbox" id="real-confirmed">Conferi contrato, CNPJ, domínio, filial e ambiente acima e autorizo salvar as alterações nesta filial.</label>
+    <div class="hiper-actions"><button id="run-button" type="submit">Executar</button><button id="resume-button" type="button">Retomar</button><button id="pause-button" type="button">Solicitar pausa</button></div>
+  </form>
+  <div id="hiper-feedback" class="notice" role="status" aria-live="polite">Selecione simulação para testar o fluxo ou conecte uma sessão autorizada.</div>
+  <section class="card"><h2>Progresso por etapa</h2><ol id="hiper-steps" class="steps"></ol></section>
+  <section class="card"><h2>Histórico da implantação</h2><ol id="hiper-history"></ol></section>
+  <div class="actions"><a class="button secondary" href="{{ url_for('review_deployment', deployment_id=deployment.id) }}">Revisar dados</a><a class="button secondary" href="{{ url_for('deployment_report', deployment_id=deployment.id) }}">Relatório</a></div>
+</div>
+<script src="{{ url_for('static', filename='hiper.js') }}" defer></script>
+{% endblock %}

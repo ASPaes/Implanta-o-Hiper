@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Executar implantação #{{ deployment.id }}{% endblock %}
+{% block content %}
+<div class="page-head"><div><p class="eyebrow">Implantação #{{ deployment.id }}</p><h1>Confirmar conta e executar</h1></div><span class="mode">{{ 'DRY-RUN' if dry_run else 'MODO REAL' }}</span></div>
+<div class="notice"><strong>Integração com navegador</strong><p>Para autenticar, localizar a filial pelo CNPJ e executar dados gerais com verificação, use o <a href="{{ url_for('hiper.panel', deployment_id=deployment.id) }}">painel Hiper</a>. O formulário abaixo mantém a simulação local das sete etapas.</p></div>
+<div class="notice"><strong>Confirmação obrigatória</strong><p>O operador deve estar na conta/loja correta. O robô não faz login, MFA ou cadastro de conta.</p></div>
+{% if not dry_run %}<div class="alert error">A automação real ainda depende da captura dos seletores do Hiper. A senha não será cadastrada enquanto esse bloqueio existir.</div>{% endif %}
+<form method="post" class="card confirm-form">
+  <label>Conta/loja exibida no Hiper<input name="hiper_account" value="{{ deployment.hiper_account or '' }}" required></label>
+  <label>Operador responsável<input name="approved_by" value="{{ deployment.approved_by or '' }}" required></label>
+  <label class="check"><input type="checkbox" name="account_confirmed" value="yes"> Confirmo que esta é a conta/loja correta para este contrato.</label>
+  <fieldset class="users-confirm"><legend>Bandeiras de cartão</legend><div class="grid">
+    <label>Credenciadora<input value="{{ deployment.data.get('bandeiras_cartao', {}).get('credenciadora', '') }}" readonly></label>
+    <label>Cliente/fornecedor (banco)<input value="{{ deployment.data.get('instituicao_financeira', {}).get('bank_name', '') }}" readonly></label>
+  </div><p class="field-note">Configuração das 15 entradas na etapa de vendas. <a href="{{ url_for('review_deployment', deployment_id=deployment.id) }}">Editar a configuração das bandeiras</a></p></fieldset>
+  {% for user in users %}
+  <fieldset class="users-confirm"><legend>Usuários{% if users|length > 1 %} · {{ loop.index }}{% endif %}</legend><div class="grid">
+    <label>Nome<input value="{{ user.get('nome', '') }}" readonly></label>
+    <label>Usuário<input value="{{ user.get('usuario', '') }}" readonly></label>
+    <label>Perfil do usuário<input value="{{ user.get('perfil', '')|capitalize }}" readonly></label>
+    <label>Senha<input type="password" name="usuarios.senha" autocomplete="new-password" {% if users_pending %}required{% endif %}></label>
+  </div><p class="field-note">A senha é usada apenas nesta execução e não é salva no SQLite. <a href="{{ url_for('review_deployment', deployment_id=deployment.id) }}">Editar os dados dos usuários</a></p></fieldset>
+  {% endfor %}
+  <button>Iniciar configuração</button>
+</form>
+<section class="card"><h2>Etapas</h2><ol class="steps">{% for step in steps %}<li><span>{{ step.step_key|replace('_', ' ') }}</span><span class="status">{{ step.status|replace('_', ' ') }}</span></li>{% endfor %}</ol></section>
+{% endblock %}

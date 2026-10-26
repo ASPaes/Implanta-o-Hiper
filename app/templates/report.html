@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Relatório #{{ deployment.id }}{% endblock %}
+{% block content %}
+<div class="page-head"><div><p class="eyebrow">Contrato {{ deployment.contract_id }}</p><h1>Relatório da implantação</h1></div><span class="status">{{ deployment.status|replace('_', ' ') }}</span></div>
+<section class="summary"><div><small>Ambiente</small><strong>{{ deployment.environment }}</strong></div><div><small>Conta confirmada</small><strong>{{ deployment.hiper_account or '—' }}</strong></div><div><small>Operador</small><strong>{{ deployment.approved_by or '—' }}</strong></div></section>
+<section class="card"><h2>Contexto Hiper</h2><p>Modo: <strong>{{ deployment.execution_mode }}</strong> · Filial: {{ deployment.hiper_store_name or 'Não localizada' }} · CNPJ: {{ deployment.hiper_store_cnpj or '—' }} · ID: {{ deployment.hiper_store_id or '—' }}</p><p>Domínio: {{ deployment.hiper_base_url or '—' }} · Verificado em: {{ deployment.store_verified_at or '—' }}</p><a href="{{ url_for('hiper.panel', deployment_id=deployment.id) }}">Abrir painel e retomar</a></section>
+<section class="card"><h2>Resultado por etapa</h2><div class="table-wrap"><table><thead><tr><th>Etapa</th><th>Status</th><th>Modo</th><th>Tentativas</th><th>Evidência/erro</th></tr></thead><tbody>
+{% for step in steps %}<tr><td>{{ step.step_key|replace('_', ' ') }}</td><td><span class="status">{{ step.status|replace('_', ' ') }}</span></td><td>{{ step.execution_mode }}</td><td>{{ step.attempts }}</td><td>{% if step.error_message_sanitized %}<span class="error-text">{{ step.error_code }}: {{ step.error_message_sanitized }}</span><br>{% endif %}{{ step.evidence_reference or '—' }}</td></tr>{% endfor %}
+</tbody></table></div></section>
+<section class="card"><h2>Auditoria</h2><div class="table-wrap"><table><thead><tr><th>Ação</th><th>Operador</th><th>Quando (UTC)</th></tr></thead><tbody>
+{% for event in audit_events %}<tr><td>{{ event.action|replace('_', ' ') }}</td><td>{{ event.actor }}</td><td>{{ event.occurred_at }}</td></tr>{% endfor %}
+</tbody></table></div></section>
+<div class="actions"><a class="button secondary" href="{{ url_for('index') }}">Voltar à lista</a>{% if deployment.status != 'homologacao_concluida' %}<a class="button" href="{{ url_for('execute_deployment', deployment_id=deployment.id) }}">Retomar</a>{% endif %}</div>
+{% endblock %}

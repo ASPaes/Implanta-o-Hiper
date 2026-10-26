@@ -1,0 +1,15 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Loja de teste local</title>
+<div data-testid="authenticated">Sessão autorizada</div><h1 data-testid="store-name">{{ store.name }}</h1>
+<label>CNPJ<input name="cnpj" value="{{ store.cnpj }}" readonly></label>
+<label>Nome fantasia<input name="trade_name" value="{{ store.trade_name }}"></label>
+<label>E-mail<input name="email" value="{{ store.email }}"></label>
+<div data-testid="sensitive"><label>Senha do certificado<input type="password" value="fixture-secret-do-not-export"></label></div>
+<button type="button" onclick="save()">Salvar</button><p data-testid="saved" hidden>Alterações salvas</p>
+<script>
+async function save() {
+ const response = await fetch('/save/{{ store.id }}', {method:'POST', headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({trade_name:document.querySelector('[name=trade_name]').value,
+   email:document.querySelector('[name=email]').value})});
+ if(response.ok) document.querySelector('[data-testid=saved]').hidden = false;
+}
+</script></html>

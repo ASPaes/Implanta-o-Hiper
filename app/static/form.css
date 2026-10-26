@@ -1,0 +1,136 @@
+select {
+  width: 100%;
+  border: 1px solid #bcc8c5;
+  border-radius: 8px;
+  padding: 11px 12px;
+  font: inherit;
+  background: white;
+}
+.hiper-actions { display:flex; flex-wrap:wrap; gap:10px; }
+.hiper-store { display:grid; grid-template-columns:minmax(130px,1fr) 3fr; gap:8px 16px; margin:0; }
+.hiper-store dt { color:var(--muted); }
+.hiper-store dd { margin:0; overflow-wrap:anywhere; }
+#hiper-history { overflow-wrap:anywhere; font-size:13px; }
+#hiper-history li { padding:8px 0; }
+@media(max-width:720px) { .hiper-store { grid-template-columns:1fr; } #hiper-steps li { gap:10px; flex-wrap:wrap; } }
+select:focus { outline: 3px solid #bce0d7; border-color: var(--brand); }
+select.invalid { border-color: var(--danger); }
+.required-marker {
+  color: #e4771d;
+  font-size: 17px;
+  line-height: 0;
+  vertical-align: super;
+  margin-left: 3px;
+}
+.field-note {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0;
+}
+.users-confirm {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+}
+.users-confirm legend { font-size: 17px; font-weight: 800; }
+.add-user-button, .remove-block-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  margin-left: 8px;
+  font-size: 25px;
+  line-height: 1;
+  vertical-align: middle;
+}
+.add-user-button:focus-visible { outline: 3px solid #bce0d7; outline-offset: 2px; }
+.remove-block-button { background: #f8dede; color: var(--danger); }
+.remove-block-button:hover { background: #f0c4c4; }
+.remove-block-button:focus-visible { outline: 3px solid #f0c4c4; outline-offset: 2px; }
+.remove-block-button:disabled { opacity: .4; cursor: default; }
+.user-block .field-note { margin-top: 16px; }
+.caixa-block { border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-bottom: 14px; }
+.caixa-block:last-child { margin-bottom: 0; }
+.full-width { grid-column: 1 / -1; }
+.ie-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+}
+.fiscal-subsection {
+  grid-column: 1 / -1;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+}
+.fiscal-subsection legend { font-size: 16px; font-weight: 750; }
+.secret-source {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+}
+.switch-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  cursor: pointer;
+}
+.switch-control { display: inline-flex; align-items: center; gap: 9px; position: relative; }
+.switch-control input {
+  position: absolute;
+  inset: 0;
+  width: 50px;
+  height: 28px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+.switch-track {
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+  border-radius: 99px;
+  background: #aab4b9;
+  position: relative;
+  transition: background .18s ease;
+}
+.switch-track::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 3px #0003;
+  transition: transform .18s ease;
+}
+.switch-control input:checked + .switch-track { background: #168a5e; }
+.switch-control input:checked + .switch-track::after { transform: translateX(22px); }
+.switch-control input:focus-visible + .switch-track { outline: 3px solid #bce0d7; outline-offset: 2px; }
+.switch-state::after { content: 'Não'; }
+.switch-control input:checked ~ .switch-state::after { content: 'Sim'; }
+input:disabled { background: #edf1f0; color: var(--muted); }
+.lookup-status { min-height: 18px; font-weight: 500; }
+.lookup-status.is-loading { color: var(--brand); }
+.lookup-status.is-success { color: var(--brand); }
+.lookup-status.is-error { color: var(--danger); }
+.cnpj-lookup-row { display: flex; gap: 8px; align-items: stretch; }
+.cnpj-lookup-row input { min-width: 0; flex: 1; }
+.cnpj-lookup-button { white-space: nowrap; }
+button:disabled { opacity: .65; cursor: wait; }
+@media (max-width: 720px) {
+  .ie-row, .secret-source { grid-template-columns: 1fr; }
+  .cnpj-lookup-row { flex-direction: column; }
+}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Revisar contrato {{ deployment.contract_id }}{% endblock %}
+{% block content %}
+{% macro user_block(user, index=0, add_button=false) %}
+<fieldset class="card user-block" data-user-block>
+  <legend>Usuários{% if add_button %} <button type="button" class="add-user-button" id="add-user" aria-label="Adicionar usuário" title="Adicionar usuário" aria-controls="users-list">+</button>{% endif %} <button type="button" class="remove-block-button" data-remove-user aria-label="Remover usuário" title="Remover usuário" {% if users|length <= 1 %}disabled{% endif %}>−</button></legend>
+  <div class="grid">
+    {% for field, label in field_groups['usuarios'] %}
+    {% set key = user_error_key(index, field) %}
+    <label><span>{{ label }}</span>
+      {% if field == 'perfil' %}
+      <select name="usuarios.{{ field }}" class="{% if errors.get(key) %}invalid{% endif %}" required>
+        <option value="">Selecione um perfil</option>
+        {% for profile in user_profiles %}<option value="{{ profile }}" {% if user.get(field) == profile %}selected{% endif %}>{{ profile|capitalize }}</option>{% endfor %}
+      </select>
+      {% else %}
+      <input name="usuarios.{{ field }}" value="{{ user.get(field, '') }}" class="{% if errors.get(key) %}invalid{% endif %}" required>
+      {% endif %}
+      {% if errors.get(key) %}<small>{{ errors[key] }}</small>{% endif %}
+    </label>
+    {% endfor %}
+  </div>
+  <p class="field-note">A senha deste usuário será solicitada na próxima tela e enviada somente durante a execução.</p>
+</fieldset>
+{% endmacro %}
+{% macro caixa_block(caixa) %}
+<fieldset class="caixa-block" data-caixa-block><legend>Caixa <button type="button" class="remove-block-button" data-remove-caixa aria-label="Remover caixa" title="Remover caixa" {% if data.get('fiscal', {}).get('caixas', [])|length <= 1 %}disabled{% endif %}>−</button></legend>
+  <div class="grid">
+    <label>Número do caixa<input name="fiscal.caixas.numero_caixa" value="{{ caixa.get('numero_caixa', '') }}"></label>
+    <label>Série fiscal<input name="fiscal.caixas.serie_fiscal" value="{{ caixa.get('serie_fiscal', '') }}"></label>
+  </div>
+</fieldset>
+{% endmacro %}
+<div class="page-head"><div><p class="eyebrow">Contrato {{ deployment.contract_id }}</p><h1>Revise os dados</h1></div><span class="status">{{ deployment.status|replace('_', ' ') }}</span></div>
+<form method="post">
+  {% for section, fields in field_groups.items() %}
+  {% if section != 'usuarios' %}
+  <fieldset class="card"><legend>{{ section_labels[section] }}</legend><div class="grid">
+    {% for field, label in fields %}{% set key = section ~ '.' ~ field %}
+    {% if key == 'company.inscricao_estadual' %}<div class="ie-row">
+      <label><span>{{ label }}</span><input name="{{ key }}" value="{{ data.get(section, {}).get(field, '') }}" {% if data.get('company', {}).get('isenta_ie') %}disabled{% endif %}></label>
+      <label class="switch-row"><span>Isenta de IE</span><span class="switch-control">
+        <input type="checkbox" name="company.isenta_ie" value="yes" role="switch" {% if data.get('company', {}).get('isenta_ie') %}checked{% endif %}>
+        <span class="switch-track" aria-hidden="true"></span><span class="switch-state" aria-hidden="true"></span>
+      </span></label>
+    </div>
+    {% else %}
+    <label><span>{{ label }}{% if key in required_markers %}<sup class="required-marker" aria-label="obrigatório">*</sup>{% endif %}</span>
+      {% if key == 'company.cnpj' %}
+      <span class="cnpj-lookup-row">
+        <input name="{{ key }}" value="{{ data.get(section, {}).get(field, '') }}" class="{% if errors.get(key) %}invalid{% endif %}" inputmode="numeric" data-lookup-url="{{ url_for('consult_cnpj') }}" aria-describedby="cnpj-lookup-status">
+        <button type="button" class="cnpj-lookup-button" data-cnpj-target="company">Consultar CNPJ</button>
+      </span>
+      {% elif key == 'instituicao_financeira.cnpj_banco' %}
+      <span class="cnpj-lookup-row">
+        <input name="{{ key }}" value="{{ data.get(section, {}).get(field, '') }}" class="{% if errors.get(key) %}invalid{% endif %}" inputmode="numeric" data-lookup-url="{{ url_for('consult_cnpj') }}" aria-describedby="bank-cnpj-lookup-status" required>
+        <button type="button" class="cnpj-lookup-button" data-cnpj-target="bank">Consultar CNPJ</button>
+      </span>
+      {% else %}
+      <input name="{{ key }}" value="{{ data.get(section, {}).get(field, '') }}" class="{% if errors.get(key) %}invalid{% endif %}" {% if key in required_markers %}required{% endif %} {% if section == 'produto_ncm' or key in ('fiscal.cliente_fornecedor', 'fiscal.confissao_divida') %}readonly{% endif %}>
+      {% endif %}
+      {% if errors.get(key) %}<small>{{ errors[key] }}</small>{% endif %}
+      {% if key == 'company.cnpj' %}<small id="cnpj-lookup-status" class="lookup-status" role="status" aria-live="polite"></small>{% endif %}
+      {% if key == 'instituicao_financeira.cnpj_banco' %}<small id="bank-cnpj-lookup-status" class="lookup-status" role="status" aria-live="polite"></small>{% endif %}
+    </label>
+    {% endif %}
+    {% endfor %}
+    {% if section == 'fiscal' %}
+      <div class="secret-source">
+        <label>Certificado digital<input value="{{ secret_status.arquivo }}" readonly></label>
+        <label>Senha (certificado digital)<input value="{{ secret_status.credencial }}" readonly></label>
+        <p class="field-note">Esses dados vêm do contrato. Os valores sensíveis não são exibidos nem salvos.</p>
+      </div>
+      <fieldset class="fiscal-subsection"><legend>Habilitar Busca Automática da NF-e</legend>
+        <label class="switch-row"><span>Busca automática da NF-e</span><span class="switch-control">
+          <input type="checkbox" name="fiscal.busca_automatica_nfe" value="yes" role="switch" {% if data.get('fiscal', {}).get('busca_automatica_nfe') %}checked{% endif %}>
+          <span class="switch-track" aria-hidden="true"></span><span class="switch-state" aria-hidden="true"></span>
+        </span></label>
+      </fieldset>
+      <fieldset class="fiscal-subsection"><legend>Caixas <button type="button" class="add-user-button" id="add-caixa" aria-label="Adicionar caixa" title="Adicionar caixa" aria-controls="caixas-list">+</button></legend>
+        <div id="caixas-list">{% for caixa in data.get('fiscal', {}).get('caixas', []) %}{{ caixa_block(caixa) }}{% endfor %}</div>
+        <template id="caixa-block-template">{{ caixa_block({}) }}</template>
+      </fieldset>
+      <fieldset class="fiscal-subsection" id="nfce-settings"><legend>Configurações de NFC-e</legend><div class="grid">
+        <label>Número de identificação<input name="fiscal.nfce.numero_identificacao" value="{{ data.get('fiscal', {}).get('nfce', {}).get('numero_identificacao', '') }}" inputmode="numeric"></label>
+        <label>Token de identificação do contribuinte (CSC)<input type="password" name="fiscal.nfce.token" autocomplete="off" value="" placeholder="{% if nfce_token_available %}Token informado{% endif %}">
+          <small class="field-note">{{ secret_status.codigo }}. {% if nfce_token_available %}Token disponível nesta sessão. {% endif %}O token fica disponível até o servidor ser reiniciado.</small>
+        </label>
+      </div></fieldset>
+      <fieldset class="fiscal-subsection" id="pix-settings"><legend>Configurações de Pix</legend><div class="grid">
+        <label>Cliente/fornecedor (banco)<input name="fiscal.cliente_fornecedor" value="{{ data.get('fiscal', {}).get('cliente_fornecedor', '') }}" readonly></label>
+        <label>Conta bancária<input name="fiscal.conta_bancaria" value="{{ data.get('fiscal', {}).get('conta_bancaria', '') }}"></label>
+        <label class="full-width">Confissão de dívida<input name="fiscal.confissao_divida" value="{{ data.get('fiscal', {}).get('confissao_divida', '') }}" readonly></label>
+        <fieldset class="fiscal-subsection"><legend>Pedido de venda</legend>
+          <label class="switch-row"><span>Imprimir nome fantasia da loja no pedido de venda e no orçamento</span><span class="switch-control">
+            <input type="checkbox" name="fiscal.imprimir_nome_fantasia" value="yes" role="switch" {% if data.get('fiscal', {}).get('imprimir_nome_fantasia') %}checked{% endif %}>
+            <span class="switch-track" aria-hidden="true"></span><span class="switch-state" aria-hidden="true"></span>
+          </span></label>
+        </fieldset>
+      </div></fieldset>
+      <fieldset class="fiscal-subsection"><legend>Recebimentos</legend>
+        <label>Número de vias no comprovante de recebimento (opcional)<input value="1" readonly></label>
+      </fieldset>
+    {% endif %}
+  </div></fieldset>
+  {% endif %}
+  {% endfor %}
+  <fieldset class="card"><legend>Conexão de venda</legend>
+    <fieldset class="fiscal-subsection" id="card-brand-settings"><legend>Bandeiras de cartão</legend>
+      <div class="grid">
+        <label><span>Credenciadora<sup class="required-marker" aria-label="obrigatório">*</sup></span>
+          <input name="bandeiras_cartao.credenciadora" value="{{ data.get('bandeiras_cartao', {}).get('credenciadora', '') }}" class="{% if errors.get('bandeiras_cartao.credenciadora') %}invalid{% endif %}" required>
+          {% if errors.get('bandeiras_cartao.credenciadora') %}<small>{{ errors['bandeiras_cartao.credenciadora'] }}</small>{% endif %}
+        </label>
+        <label>Cliente/fornecedor (banco)<input name="bandeiras_cartao.cliente_fornecedor" value="{{ data.get('bandeiras_cartao', {}).get('cliente_fornecedor', '') }}" readonly></label>
+        <p class="field-note">A mesma credenciadora e o banco cadastrado serão usados nas 15 entradas abaixo.</p>
+        <div class="table-wrap full-width"><table>
+          <thead><tr><th scope="col">Bandeira</th><th scope="col">Modalidade</th></tr></thead>
+          <tbody>{% for target in card_targets %}<tr data-card-entry><td>{{ target.bandeira }}</td><td>{{ 'Crédito' if target.modalidade == 'credito' else 'Débito' if target.modalidade == 'debito' else 'Única' }}</td></tr>{% endfor %}</tbody>
+        </table></div>
+      </div>
+    </fieldset>
+  </fieldset>
+  <div id="users-list">
+    {% for user in users %}{{ user_block(user, loop.index0, loop.first) }}{% endfor %}
+  </div>
+  <template id="user-block-template">{{ user_block({}, -1) }}</template>
+  <div class="actions"><a class="button secondary" href="{{ url_for('index') }}">Cancelar</a><button>Validar e continuar</button></div>
+</form>
+<script src="{{ url_for('static', filename='review.js') }}" defer></script>
+{% endblock %}

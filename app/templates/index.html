@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Implantações · Integrador Hiper{% endblock %}
+{% block content %}
+<section class="hero">
+  <div><p class="eyebrow">Operação assistida</p><h1>Implantações</h1>
+  <p>Importe um contrato, revise os dados e execute a configuração em homologação.</p></div>
+  <form method="post" action="{{ url_for('import_contract') }}" class="import-card">
+    <label for="contract_id">Contrato</label>
+    <div class="inline"><input id="contract_id" name="contract_id" value="1042" required><button>Importar</button></div>
+  </form>
+</section>
+<section class="card">
+  <h2>Histórico</h2>
+  {% if deployments %}
+  <div class="table-wrap"><table><thead><tr><th>ID</th><th>Contrato</th><th>Ambiente</th><th>Status</th><th></th></tr></thead>
+  <tbody>{% for item in deployments %}<tr><td>#{{ item.id }}</td><td>{{ item.contract_id }}</td><td>{{ item.environment }}</td><td><span class="status">{{ item.status|replace('_', ' ') }}</span></td><td><a href="{{ url_for('review_deployment', deployment_id=item.id) }}">Abrir</a> · <a href="{{ url_for('hiper.panel', deployment_id=item.id) }}">Hiper</a> · <a href="{{ url_for('deployment_report', deployment_id=item.id) }}">Relatório</a></td></tr>{% endfor %}</tbody></table></div>
+  {% else %}<p class="empty">Nenhuma implantação importada.</p>{% endif %}
+</section>
+{% endblock %}

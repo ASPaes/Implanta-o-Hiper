@@ -1,0 +1,56 @@
+{
+  "company": {
+    "legal_name": "Empresa Piloto Comércio Ltda.",
+    "trade_name": "Empresa Piloto",
+    "apelido": "Piloto",
+    "cnpj": "12.345.678/0001-95",
+    "postal_code": "88000-000",
+    "logradouro": "Rua de Homologação",
+    "bairro": "Centro",
+    "municipio": "Florianópolis",
+    "uf": "SC",
+    "inscricao_estadual": "123456789",
+    "isenta_ie": false
+  },
+  "cliente_padrao": {
+    "nome": "Consumidor Final",
+    "cpf": "123.456.789-09",
+    "cep": "88000-000",
+    "numero": "100"
+  },
+  "instituicao_financeira": {
+    "bank_name": "Banco de Homologação",
+    "nome_fantasia": "Banco Homologação",
+    "cnpj_banco": "11.222.333/0001-44",
+    "cep": "88000-000",
+    "numero": "200"
+  },
+  "produto_ncm": {
+    "nome": "Produto padrão",
+    "ncm": "2022.10.00",
+    "codigo_interno": "1",
+    "unidade_principal": "UN - Unidade"
+  },
+  "contador": {
+    "cnpj_contabilidade": "98.765.432/0001-10"
+  },
+  "fiscal": {
+    "tax_regime": "Simples Nacional",
+    "csosn": "102",
+    "icms_rate": "0",
+    "busca_automatica_nfe": false,
+    "conta_bancaria": "Conta de homologação",
+    "caixas": {
+      "numero_caixa": "1",
+      "serie_fiscal": "1"
+    },
+    "recebimentos": {
+      "numero_vias": 1
+    }
+  },
+  "usuarios": {
+    "nome": "Cliente Piloto",
+    "usuario": "cliente.piloto",
+    "perfil": "administrador"
+  }
+}

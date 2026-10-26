@@ -1,0 +1,21 @@
+{
+  "captured_from": "Local HTML fixture only; NOT a production Hiper profile",
+  "authenticated": {"test_id": "authenticated"},
+  "login_required": {"test_id": "login-required"},
+  "auth_probe_path": "/",
+  "stores": {
+    "path": "/stores", "ready": {"test_id": "store-list"},
+    "rows": {"css": "[data-store-id]"}, "id_attribute": "data-store-id",
+    "id_from_url_regex": "/stores/([^/]+)/general",
+    "cnpj": {"test_id": "row-cnpj"}, "name": {"test_id": "row-name"},
+    "link_to_settings": {"role": "link", "name": "Configurar"}
+  },
+  "general_data": {
+    "path_template": "/stores/{store_id}/general",
+    "cnpj": {"label": "CNPJ"}, "store_name": {"test_id": "store-name"},
+    "fields": {"trade_name": {"label": "Nome fantasia"}, "email": {"label": "E-mail"}},
+    "save": {"role": "button", "name": "Salvar"},
+    "saved": {"test_id": "saved"}
+  },
+  "sensitive": [{"test_id": "sensitive"}]
+}

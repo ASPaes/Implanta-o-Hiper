@@ -1,0 +1,1 @@
+"""Hiper automation package."""
